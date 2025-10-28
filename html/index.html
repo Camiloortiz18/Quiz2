@@ -1,0 +1,297 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard | Sistema de gestión académica</title>
+    <link rel="stylesheet" href="../css/general.css">
+    <link rel="stylesheet" href="../css/index.css">
+    <link rel="stylesheet" href="../css/dashboard.css">
+    <link rel="stylesheet" href="../css/footer.css">
+</head>
+<body>
+    <!-- Header -->
+    <header>
+        <div class="container">
+            <div class="header-content">
+                <a href="index.html" class="logo">Sistema académico</a>
+                <nav>
+                    <ul>
+                        <li><a href="index.html" class="active">Dashboard</a></li>
+                        <li><a href="about.html">Sobre mí</a></li>
+                        <!-- <li><a href="api.html">API Externa</a></li> -->
+                    </ul>
+                </nav>
+                <div id="userInfo"></div>
+            </div>
+        </div>
+    </header>
+
+    <main>
+        <div class="container">
+            
+            <!-- Mensajes -->
+            <div id="messageContainer"></div>
+
+            <!-- Estadísticas -->
+            <section class="section">
+                <h2 class="section-title">Estadísticas generales</h2>
+                <div id="statsContainer"></div>
+            </section>
+
+            <!-- Gráficos -->
+            <section class="section">
+                <h2 class="section-title">Visualización de datos</h2>
+                <div class="charts-grid">
+                    <div class="chart-container">
+                        <canvas id="gradesChart" width="600" height="400"></canvas>
+                    </div>
+                    <div class="chart-container">
+                        <canvas id="statusChart" width="600" height="400"></canvas>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Formulario -->
+            <section class="section" id="formSection">
+                <h2 class="section-title">Agregar estudiante</h2>
+                <form id="studentForm">
+                    <input type="hidden" id="studentId" name="id">
+                    
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="nombre">Nombre completo *</label>
+                            <input type="text" id="nombre" name="nombre" 
+                                   class="form-control" placeholder="Ej: Juan Pérez" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="email">Email *</label>
+                            <input type="email" id="email" name="email" 
+                                   class="form-control" placeholder="Ej: juan@email.com" required>
+                        </div>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="carrera">Carrera *</label>
+                            <select id="carrera" name="carrera" class="form-control" required>
+                                <option value="">Seleccionar carrera...</option>
+                                <option value="Ingeniería de Sistemas">Ingeniería de sistemas</option>
+                                <option value="Ingeniería Civil">Ingeniería civil</option>
+                                <option value="Ingeniería Industrial">Ingeniería industrial</option>
+                                <option value="Ingeniería Electrónica">Ingeniería electrónica</option>
+                                <option value="Administración de Empresas">Administración deempresas</option>
+                                <option value="Medicina">Medicina</option>
+                                <option value="Derecho">Derecho</option>
+                                <option value="Psicología">Psicología</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="grade">Nota promedio</label>
+                            <input type="number" id="grade" name="grade" 
+                                   class="form-control" placeholder="0.0 - 5.0" 
+                                   min="0" max="5" step="0.1">
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="status">Estado</label>
+                        <select id="status" name="status" class="form-control">
+                            <option value="active">Activo</option>
+                            <option value="inactive">Inactivo</option>
+                            <option value="graduated">Graduado</option>
+                        </select>
+                    </div>
+
+                    <div class="form-actions">
+                        <button type="submit" class="btn btn-primary" id="submitBtn">
+                            Agregar estudiante
+                        </button>
+                        <button type="button" class="btn btn-secondary hidden" 
+                                id="cancelBtn" onclick="cancelEdit()">
+                            Cancelar
+                        </button>
+                    </div>
+                </form>
+            </section>
+
+            <!-- Lista de estudiantes -->
+            <section class="section">
+                <div class="section-header">
+                    <h2 class="section-title">Lista de estudiantes</h2>
+                    <div class="section-actions">
+                        <button class="btn btn-primary" onclick="loadStudents()">
+                            Actualizar
+                        </button>
+                        <button class="btn btn-danger" id="batchDeleteBtn" disabled>
+                            Eliminar seleccionados (0)
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Filtros y búsqueda -->
+                <div class="filters-container">
+                    <div class="filter-group">
+                        <label>Búsqueda:</label>
+                        <input type="text" id="searchInput" 
+                               class="form-control" 
+                               placeholder="Buscar por nombre o email...">
+                    </div>
+                    <div class="filter-group">
+                        <label>Estado:</label>
+                        <select id="statusFilter" class="form-control">
+                            <option value="">Todos</option>
+                            <option value="active">Activos</option>
+                            <option value="inactive">Inactivos</option>
+                            <option value="graduated">Graduados</option>
+                        </select>
+                    </div>
+                    <div class="filter-group">
+                        <label>Carrera:</label>
+                        <select id="carreraFilter" class="form-control">
+                            <option value="">Todas</option>
+                            <option value="Ingeniería de Sistemas">Ingeniería de sistemas</option>
+                            <option value="Ingeniería Civil">Ingeniería civil</option>
+                            <option value="Ingeniería Industrial">Ingeniería industrial</option>
+                            <option value="Medicina">Medicina</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div id="loading" class="loading hidden">
+                    <span class="spinner"></span>
+                    Cargando estudiantes...
+                </div>
+
+                <div class="table-container">
+                    <table class="students-table">
+                        <thead>
+                            <tr>
+                                <th>
+                                    <input type="checkbox" id="selectAll" 
+                                           onchange="updateBatchDeleteButton()">
+                                </th>
+                                <th>ID</th>
+                                <th>Nombre</th>
+                                <th>Email</th>
+                                <th>Carrera</th>
+                                <th>Nota</th>
+                                <th>Estado</th>
+                                <th>Fecha registro</th>
+                                <th>Acciones</th>
+                            </tr>
+                        </thead>
+                        <tbody id="studentsBody"></tbody>
+                    </table>
+                </div>
+
+                <!-- Paginación -->
+                <div id="paginationContainer"></div>
+            </section>
+        </div>
+    </main>
+
+    <!-- Footer -->
+    <footer>
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-main">
+                    <div class="footer-brand">
+                        <a href="index.html" class="footer-logo">Sistema de estudiantes</a>
+                        <p class="footer-description">
+                            Plataforma integral para la gestión académica de estudiantes, 
+                            desarrollada con tecnologías web modernas y diseño centrado en el usuario.
+                        </p>
+                        <div class="footer-social">
+                            <a href="https://github.com/Camiloortiz18" class="social-link-footer" target="_blank" title="GitHub"></a>
+                            <a href="https://www.linkedin.com/in/duvan-ortiz-gonz%C3%A1lez-690a141a7/" class="social-link-footer" target="_blank" title="LinkedIn"></a>
+                            <a href="https://ortizcamilo369@gmail.com" class="social-link-footer" target="_blank" title="Email"></a>
+                            <a href="https://x.com/ortizcamilo369" class="social-link-footer" target="_blank" title="Twitter"></a>
+                        </div>
+                    </div>
+                    
+                    <div class="footer-section">
+                        <h4>Navegación</h4>
+                        <ul class="footer-links">
+                            <li><a href="index.html">Inicio</a></li>
+                            <li><a href="about.html">Sobre mí</a></li>
+                            <li><a href="api.html">API Externa</a></li>
+                        </ul>
+                    </div>
+                    
+                    <div class="footer-section">
+                        <h4>Funcionalidades</h4>
+                        <ul class="footer-links">
+                            <li><a href="#studentForm">Agregar Estudiante</a></li>
+                            <li><a href="#studentsContainer">Lista de Estudiantes</a></li>
+                            <li><a href="about.html#contactForm">Contacto</a></li>
+                            <li><a href="api.html">APIs Externas</a></li>
+                        </ul>
+                    </div>
+                    
+                    <div class="footer-section">
+                        <h4>Contacto</h4>
+                        <div class="footer-contact">
+                            <div class="contact-item-footer">
+                                <span class="contact-icon-footer"></span>
+                                <span>ortizcamilo369@gmail.com</span>
+                            </div>
+                            <div class="contact-item-footer">
+                                <span class="contact-icon-footer"></span>
+                                <span>+57 3145002338</span>
+                            </div>
+                            <div class="contact-item-footer">
+                                <span class="contact-icon-footer"></span>
+                                <span>Ibagué, Tolima</span>
+                            </div>
+                            <div class="contact-item-footer">
+                                <span class="contact-icon-footer"></span>
+                                <span>Desarrollador Full Stack</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="footer-stats">
+                    <div class="footer-stat">
+                        <span class="footer-stat-number" id="footerStudentsCount">0</span>
+                        <span class="footer-stat-label">Estudiantes</span>
+                    </div>
+                    <div class="footer-stat">
+                        <span class="footer-stat-number">3</span>
+                        <span class="footer-stat-label">Páginas</span>
+                    </div>
+                    <div class="footer-stat">
+                        <span class="footer-stat-number">5</span>
+                        <span class="footer-stat-label">APIs</span>
+                    </div>
+                    <div class="footer-stat">
+                        <span class="footer-stat-number">100%</span>
+                        <span class="footer-stat-label">Responsive</span>
+                    </div>
+                </div>
+                
+                <div class="footer-bottom">
+                    <div class="footer-copyright">
+                        <p>&copy; 2024 Duvan Camilo Ortiz Gonzalez. Parcial 1 - Sistema de gestión de estudiantes.</p>
+                    </div>
+                    <div class="footer-tech">
+                        <span>Desarrollado con:</span>
+                        <div class="tech-stack">
+                            <span class="tech-badge">PHP</span>
+                            <span class="tech-badge">SQLite</span>
+                            <span class="tech-badge">HTML5</span>
+                            <span class="tech-badge">CSS3</span>
+                            <span class="tech-badge">JavaScript</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+
+    <!-- Scripts con ES6 Modules -->
+    <script type="module" src="../js/app.js"></script>
+</body>
+</html>

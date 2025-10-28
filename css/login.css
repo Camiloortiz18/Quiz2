@@ -1,0 +1,152 @@
+/* ===== LOGIN PAGE (Versión 3 - Minimalista clara con acentos lilas) ===== */
+
+body.login-page {
+    font-family: 'Inter', 'Poppins', sans-serif;
+    background: #f6f5fa;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 100vh;
+    margin: 0;
+    color: #333;
+}
+
+/* Contenedor */
+.login-container {
+    width: 100%;
+    max-width: 400px;
+    padding: 20px;
+}
+
+/* Tarjeta */
+.login-card {
+    background: #ffffff;
+    border-radius: 14px;
+    box-shadow: 0 6px 25px rgba(0, 0, 0, 0.08);
+    padding: 40px 35px;
+    text-align: center;
+    border: 1px solid #e7e3f3;
+}
+
+/* Encabezado */
+.login-header {
+    margin-bottom: 25px;
+}
+
+.login-title {
+    font-size: 1.6rem;
+    font-weight: 600;
+    color: #5a2ea6;
+    margin-bottom: 5px;
+}
+
+.login-subtitle {
+    font-size: 0.95rem;
+    color: #7b6fb4;
+}
+
+/* Mensajes */
+#messageContainer {
+    margin-bottom: 15px;
+    font-size: 0.9rem;
+    color: #5a2ea6;
+}
+
+/* Formulario */
+.login-form {
+    display: flex;
+    flex-direction: column;
+    gap: 18px;
+}
+
+/* Labels e inputs */
+.form-group {
+    text-align: left;
+}
+
+.form-label {
+    font-size: 0.85rem;
+    color: #5a2ea6;
+    margin-bottom: 6px;
+    display: block;
+}
+
+.input-group {
+    display: flex;
+    align-items: center;
+    background: #f1eef9;
+    border-radius: 10px;
+    border: 1px solid #d9d3f3;
+    transition: all 0.3s ease;
+}
+
+.input-group:focus-within {
+    border-color: #a47ef8;
+    box-shadow: 0 0 0 3px rgba(164, 126, 248, 0.2);
+}
+
+.form-control {
+    flex: 1;
+    border: none;
+    background: transparent;
+    padding: 12px 14px;
+    color: #333;
+    font-size: 0.95rem;
+    outline: none;
+}
+
+.form-control::placeholder {
+    color: #9a90b8;
+}
+
+/* Botón principal */
+.btn {
+    background: linear-gradient(135deg, #7d4ef5, #9b7df8);
+    border: none;
+    border-radius: 10px;
+    padding: 12px;
+    color: #fff;
+    font-size: 1rem;
+    cursor: pointer;
+    transition: transform 0.2s, box-shadow 0.3s;
+}
+
+.btn:hover {
+    box-shadow: 0 4px 15px rgba(125, 78, 245, 0.3);
+    transform: translateY(-2px);
+}
+
+.btn:active {
+    transform: translateY(0);
+}
+
+/* Loading */
+.btn-loading.hidden {
+    display: none;
+}
+
+.spinner {
+    width: 16px;
+    height: 16px;
+    border: 2px solid #fff;
+    border-top-color: transparent;
+    border-radius: 50%;
+    display: inline-block;
+    margin-right: 8px;
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    to { transform: rotate(360deg); }
+}
+
+/* Responsivo */
+@media (max-width: 480px) {
+    .login-card {
+        padding: 30px 20px;
+    }
+
+    .login-title {
+        font-size: 1.3rem;
+    }
+}

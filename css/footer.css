@@ -1,0 +1,308 @@
+/* Animaciones avanzadas para el footer */
+@keyframes footerFloat {
+    0%, 100% { transform: translateY(0px); }
+    50% { transform: translateY(-3px); }
+}
+
+@keyframes footerPulse {
+    0% { opacity: 0.8; }
+    50% { opacity: 1; }
+    100% { opacity: 0.8; }
+}
+
+@keyframes footerSlideIn {
+    from { 
+        opacity: 0; 
+        transform: translateY(30px); 
+    }
+    to { 
+        opacity: 1; 
+        transform: translateY(0); 
+    }
+}
+
+/* Efectos hover avanzados */
+.footer-logo:hover {
+    animation: footerFloat 2s ease-in-out infinite;
+}
+
+.footer-stat-number:hover {
+    animation: footerPulse 1s ease-in-out infinite;
+    transform: scale(1.1);
+    color: var(--accent-color);
+}
+
+.tech-badge:hover {
+    transform: translateY(-2px);
+    background: rgba(255, 255, 255, 0.2);
+    border-color: rgba(255, 255, 255, 0.4);
+}
+
+/* Tema oscuro alternativo para footer */
+.footer-dark {
+    background: linear-gradient(135deg, #0f172a, #1e293b);
+}
+
+.footer-dark::before {
+    background: url('data:image/svg+xml,<svg width="60" height="60" viewBox="0 0 60 60" xmlns="http://www.w3.org/2000/svg"><g fill="white" fill-opacity="0.03"><path d="M30,5 L35,20 L50,15 L40,30 L55,35 L40,50 L35,35 L30,50 L25,35 L10,40 L20,25 L5,20 L20,15 Z"/></g></svg>');
+}
+
+/* Gradiente personalizable */
+.footer-gradient-blue {
+    background: linear-gradient(135deg, #667eea, #764ba2);
+}
+
+.footer-gradient-purple {
+    background: linear-gradient(135deg, #764ba2, #f093fb);
+}
+
+.footer-gradient-ocean {
+    background: linear-gradient(135deg, #667eea, #4facfe);
+}
+
+/* Estilo minimalista alternativo */
+.footer-minimal {
+    background: var(--white);
+    color: var(--text-primary);
+    border-top: 1px solid var(--gray);
+}
+
+.footer-minimal .footer-logo,
+.footer-minimal .footer-section h4 {
+    color: var(--text-primary);
+}
+
+.footer-minimal .footer-links a {
+    color: var(--text-secondary);
+}
+
+.footer-minimal .footer-links a:hover {
+    color: var(--primary-color);
+}
+
+.footer-minimal .social-link-footer {
+    background: var(--light-gray);
+    color: var(--text-secondary);
+    border: 1px solid var(--gray);
+}
+
+.footer-minimal .social-link-footer:hover {
+    background: var(--primary-color);
+    color: var(--white);
+    border-color: var(--primary-color);
+}
+
+/* Footer con glassmorphism */
+.footer-glass {
+    background: rgba(255, 255, 255, 0.1);
+    backdrop-filter: blur(10px);
+    border-top: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.footer-glass .footer-section {
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: var(--border-radius);
+    padding: var(--spacing-lg);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+/* Footer compacto para móvil */
+@media (max-width: 480px) {
+    .footer-compact .footer-main {
+        grid-template-columns: 1fr;
+        gap: var(--spacing-lg);
+    }
+    
+    .footer-compact .footer-brand {
+        text-align: center;
+    }
+    
+    .footer-compact .footer-social {
+        justify-content: center;
+    }
+    
+    .footer-compact .footer-stats {
+        grid-template-columns: repeat(2, 1fr);
+    }
+    
+    .footer-compact .footer-section {
+        text-align: center;
+    }
+}
+
+/* Efectos de scroll reveal */
+.footer-reveal {
+    opacity: 0;
+    transform: translateY(50px);
+    transition: all 0.8s ease-out;
+}
+
+.footer-reveal.revealed {
+    opacity: 1;
+    transform: translateY(0);
+}
+
+/* Enlaces con iconos animados */
+.footer-links a::before {
+    content: attr(data-icon);
+    margin-right: var(--spacing-xs);
+    transition: var(--transition);
+}
+
+.footer-links a:hover::before {
+    transform: scale(1.2);
+}
+
+/* Footer sticky (experimental) */
+.footer-sticky {
+    position: sticky;
+    bottom: 0;
+    z-index: 10;
+}
+
+/* Contador animado */
+.footer-stat-number.counting {
+    animation: countUp 2s ease-out;
+}
+
+@keyframes countUp {
+    from { transform: scale(0.5); opacity: 0; }
+    to { transform: scale(1); opacity: 1; }
+}
+
+/* Efecto parallax sutil */
+.footer-parallax {
+    transform: translateY(var(--scroll-offset, 0));
+}
+
+/* Personalización por página */
+.page-index .footer-brand {
+    border-left: 4px solid var(--primary-color);
+    padding-left: var(--spacing-md);
+}
+
+.page-about .footer-brand {
+    border-left: 4px solid var(--secondary-color);
+    padding-left: var(--spacing-md);
+}
+
+.page-api .footer-brand {
+    border-left: 4px solid var(--accent-color);
+    padding-left: var(--spacing-md);
+}
+
+/* Modo alto contraste */
+@media (prefers-contrast: high) {
+    footer {
+        background: #000000;
+        color: #ffffff;
+    }
+    
+    .footer-links a {
+        color: #ffffff;
+        text-decoration: underline;
+    }
+    
+    .social-link-footer {
+        background: #ffffff;
+        color: #000000;
+        border: 2px solid #ffffff;
+    }
+}
+
+/* Modo reducir movimiento */
+@media (prefers-reduced-motion: reduce) {
+    footer::before {
+        animation: none;
+    }
+    
+    .footer-logo:hover,
+    .footer-stat-number:hover,
+    .tech-badge:hover {
+        animation: none;
+        transform: none;
+    }
+}
+
+/* Print styles */
+@media print {
+    footer {
+        background: none !important;
+        color: #000000 !important;
+        box-shadow: none !important;
+    }
+    
+    .footer-social,
+    .footer-stats {
+        display: none !important;
+    }
+    
+    .footer-main {
+        grid-template-columns: 1fr !important;
+    }
+}
+
+/* Variables personalizables */
+:root {
+    --footer-bg-primary: #1e293b;
+    --footer-bg-secondary: #64748b;
+    --footer-text-primary: #ffffff;
+    --footer-text-secondary: rgba(255, 255, 255, 0.8);
+    --footer-accent: var(--primary-color);
+    --footer-border: rgba(255, 255, 255, 0.1);
+    --footer-padding: var(--spacing-2xl);
+    --footer-gap: var(--spacing-xl);
+}
+
+/* Tema personalizado usando variables */
+.footer-custom {
+    background: linear-gradient(135deg, var(--footer-bg-primary), var(--footer-bg-secondary));
+    color: var(--footer-text-primary);
+    padding: var(--footer-padding) 0;
+}
+
+.footer-custom .footer-main {
+    gap: var(--footer-gap);
+}
+
+.footer-custom .footer-links a {
+    color: var(--footer-text-secondary);
+}
+
+.footer-custom .footer-section h4::after {
+    background: var(--footer-accent);
+}
+
+/* Utilidades de espaciado específicas para footer */
+.footer-spacing-tight { --footer-padding: var(--spacing-lg); --footer-gap: var(--spacing-md); }
+.footer-spacing-normal { --footer-padding: var(--spacing-xl); --footer-gap: var(--spacing-lg); }
+.footer-spacing-loose { --footer-padding: var(--spacing-2xl); --footer-gap: var(--spacing-xl); }
+
+/* Efecto de hover para toda la sección del footer */
+.footer-section:hover {
+    transform: translateY(-2px);
+    transition: var(--transition-slow);
+}
+
+.footer-section:hover h4::after {
+    width: 50px;
+    transition: width 0.3s ease-out;
+}
+
+/* Indicador de página actual en navegación del footer */
+.footer-links a.current-page {
+    color: var(--primary-color);
+    font-weight: 600;
+    position: relative;
+}
+
+.footer-links a.current-page::after {
+    content: '';
+    position: absolute;
+    bottom: -2px;
+    left: 0;
+    width: 100%;
+    height: 2px;
+    background: var(--primary-color);
+    border-radius: 1px;
+}

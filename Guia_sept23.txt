@@ -1,0 +1,467 @@
+Guía Práctica: Implementación de CRUD en el Controlador
+
+Objetivo: Dominar la implementación de operaciones CRUD en el controlador usando PHP + MySQL (90’)
+
+Módulo 2: Configuración del Entorno (10 minutos)
+ Estructura del proyecto:
+crud_estudiantes/
+├── index.php               Lista estudiantes (READ)
+├── create.php              Formulario crear (CREATE)
+├── edit.php                Formulario editar (UPDATE)
+├── delete.php              Eliminar estudiante (DELETE)
+├── database/
+│   └── connection.php      Conexión a MySQL
+└── models/
+    └── Student.php         Modelo Estudiante
+
+ Configuración de base de datos (database/connection.php): 
+```php
+<?php
+class Database {
+    private $host = "localhost";
+    private $db_name = "escuela";
+    private $username = "root";
+    private $password = "";
+    public $conn;
+    
+    public function getConnection() {
+        $this->conn = null;
+        try {
+            $this->conn = new PDO(
+                "mysql:host=" . $this->host . ";dbname=" . $this->db_name,
+                $this->username, 
+                $this->password
+            );
+            $this->conn->exec("set names utf8");
+        } catch(PDOException $exception) {
+            echo "Error de conexión: " . $exception->getMessage();
+        }
+        return $this->conn;
+    }
+}
+?>
+```
+
+
+
+
+Nota: Crea la base de datos primero: 
+```sql
+CREATE DATABASE escuela;
+USE escuela;
+CREATE TABLE estudiantes (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    nombre VARCHAR(100) NOT NULL,
+    email VARCHAR(100) NOT NULL,
+    carrera VARCHAR(50) NOT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+```
+
+Módulo 3: Modelo Estudiante (15 minutos): 
+
+ models/Student.php
+```php
+<?php
+class Student {
+    private $conn;
+    private $table = "estudiantes";
+    
+    // Propiedades del estudiante
+    public $id;
+    public $nombre;
+    public $email;
+    public $carrera;
+    
+    public function __construct($db) {
+        $this->conn = $db;
+    }
+    
+    // CREATE - Crear nuevo estudiante
+    public function create() {
+        $query = "INSERT INTO " . $this->table . 
+                " SET nombre=:nombre, email=:email, carrera=:carrera";
+        
+        $stmt = $this->conn->prepare($query);
+        
+        // Limpiar datos
+        $this->nombre = htmlspecialchars(strip_tags($this->nombre));
+        $this->email = htmlspecialchars(strip_tags($this->email));
+        $this->carrera = htmlspecialchars(strip_tags($this->carrera));
+        
+        // Vincular parámetros
+        $stmt->bindParam(":nombre", $this->nombre);
+        $stmt->bindParam(":email", $this->email);
+        $stmt->bindParam(":carrera", $this->carrera);
+        
+        if($stmt->execute()) {
+            return true;
+        }
+        return false;
+    }
+    
+    // READ - Obtener todos los estudiantes
+    public function read() {
+        $query = "SELECT  FROM " . $this->table . " ORDER BY created_at DESC";
+        $stmt = $this->conn->prepare($query);
+        $stmt->execute();
+        return $stmt;
+    }
+    
+    // READ - Obtener un estudiante por ID
+    public function readOne() {
+        $query = "SELECT  FROM " . $this->table . " WHERE id = ? LIMIT 0,1";
+        $stmt = $this->conn->prepare($query);
+        $stmt->bindParam(1, $this->id);
+        $stmt->execute();
+        
+        $row = $stmt->fetch(PDO::FETCH_ASSOC);
+        
+        if($row) {
+            $this->nombre = $row['nombre'];
+            $this->email = $row['email'];
+            $this->carrera = $row['carrera'];
+            return true;
+        }
+        return false;
+    }
+    
+    // UPDATE - Actualizar estudiante
+    public function update() {
+        $query = "UPDATE " . $this->table . 
+                " SET nombre=:nombre, email=:email, carrera=:carrera 
+                 WHERE id=:id";
+        
+        $stmt = $this->conn->prepare($query);
+        
+        // Limpiar datos
+        $this->nombre = htmlspecialchars(strip_tags($this->nombre));
+        $this->email = htmlspecialchars(strip_tags($this->email));
+        $this->carrera = htmlspecialchars(strip_tags($this->carrera));
+        $this->id = htmlspecialchars(strip_tags($this->id));
+        
+        // Vincular parámetros
+        $stmt->bindParam(":nombre", $this->nombre);
+        $stmt->bindParam(":email", $this->email);
+        $stmt->bindParam(":carrera", $this->carrera);
+        $stmt->bindParam(":id", $this->id);
+        
+        if($stmt->execute()) {
+            return true;
+        }
+        return false;
+    }
+    
+    // DELETE - Eliminar estudiante
+    public function delete() {
+        $query = "DELETE FROM " . $this->table . " WHERE id = ?";
+        $stmt = $this->conn->prepare($query);
+        $stmt->bindParam(1, $this->id);
+        
+        if($stmt->execute()) {
+            return true;
+        }
+        return false;
+    }
+}
+?>
+```
+
+Conceptos importantes:
+- PDO: PHP Data Objects (más seguro que mysqli)
+- Prepared Statements: Previenen inyección SQL
+- Binding parameters: Vincula valores a parámetros de forma segura
+
+
+ Módulo 4: Controlador - CREATE (12 minutos)
+
+ create.php
+```php
+<?php
+header('Content-Type: application/json; charset=utf-8');
+
+// Incluir configuración de BD y modelo
+include_once '../database/connection.php';
+include_once '../models/Student.php';
+
+// Instanciar conexión a BD
+$database = new Database();
+$db = $database->getConnection();
+
+// Instanciar objeto Student
+$student = new Student($db);
+
+// Obtener datos del POST
+$data = json_decode(file_get_contents("php://input"));
+
+// Validar que los datos existen
+if(!empty($data->nombre) && !empty($data->email) && !empty($data->carrera)) {
+    
+    // Asignar valores al objeto student
+    $student->nombre = $data->nombre;
+    $student->email = $data->email;
+    $student->carrera = $data->carrera;
+    
+    // Crear el estudiante
+    if($student->create()) {
+        http_response_code(201); // Created
+        echo json_encode(array("message" => "Estudiante creado exitosamente."));
+    } else {
+        http_response_code(503); // Service unavailable
+        echo json_encode(array("message" => "No se pudo crear el estudiante."));
+    }
+} else {
+    http_response_code(400); // Bad request
+    echo json_encode(array("message" => "Datos incompletos."));
+}
+?>
+```
+
+ Prueba con cURL:
+```bash
+curl -X POST http://localhost/crud_estudiantes/create.php \
+  -H "Content-Type: application/json" \
+  -d '{"nombre":"Maria Garcia", "email":"maria@escuela.com", "carrera":"Ingeniería de Sistemas"}'
+```
+
+Módulo 5: Controlador - READ (25 minutos)
+
+ index.php (Listar todos)
+```php
+<?php
+header('Content-Type: application/json; charset=utf-8');
+
+include_once 'database/connection.php';
+include_once 'models/Student.php';
+
+$database = new Database();
+$db = $database->getConnection();
+
+$student = new Student($db);
+
+// Consultar estudiantes
+$stmt = $student->read();
+$num = $stmt->rowCount();
+
+if($num > 0) {
+    $students_arr = array();
+    $students_arr["estudiantes"] = array();
+    
+    while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
+        extract($row);
+        $student_item = array(
+            "id" => $id,
+            "nombre" => $nombre,
+            "email" => $email,
+            "carrera" => $carrera,
+            "created_at" => $created_at
+        );
+        array_push($students_arr["estudiantes"], $student_item);
+    }
+    
+    http_response_code(200);
+    echo json_encode($students_arr);
+} else {
+    http_response_code(404);
+    echo json_encode(array("message" => "No se encontraron estudiantes."));
+}
+?>
+```
+
+ read_one.php (Obtener uno)
+```php
+<?php
+header('Content-Type: application/json; charset=utf-8');
+
+include_once 'database/connection.php';
+include_once 'models/Student.php';
+
+$database = new Database();
+$db = $database->getConnection();
+
+$student = new Student($db);
+
+// Obtener ID de la URL
+$student->id = isset($_GET['id']) ? $_GET['id'] : die();
+
+// Obtener el estudiante
+if($student->readOne()) {
+    $student_arr = array(
+        "id" => $student->id,
+        "nombre" => $student->nombre,
+        "email" => $student->email,
+        "carrera" => $student->carrera
+    );
+    
+    http_response_code(200);
+    echo json_encode($student_arr);
+} else {
+    http_response_code(404);
+    echo json_encode(array("message" => "Estudiante no encontrado."));
+}
+?>
+```
+
+Módulo 6: Controlador - UPDATE (12 minutos)
+
+ update.php
+```php
+<?php
+header('Content-Type: application/json; charset=utf-8');
+
+include_once '../database/connection.php';
+include_once '../models/Student.php';
+
+$database = new Database();
+$db = $database->getConnection();
+
+$student = new Student($db);
+
+// Obtener datos del PUT
+$data = json_decode(file_get_contents("php://input"));
+
+// Validar que tenemos ID y datos
+if(!empty($data->id) && (!empty($data->nombre) || !empty($data->email) || !empty($data->carrera))) {
+    
+    $student->id = $data->id;
+    
+    // Primero verificamos que el estudiante existe
+    if($student->readOne()) {
+        // Actualizar solo los campos que vienen en el request
+        if(!empty($data->nombre)) $student->nombre = $data->nombre;
+        if(!empty($data->email)) $student->email = $data->email;
+        if(!empty($data->carrera)) $student->carrera = $data->carrera;
+        
+        if($student->update()) {
+            http_response_code(200);
+            echo json_encode(array("message" => "Estudiante actualizado exitosamente."));
+        } else {
+            http_response_code(503);
+            echo json_encode(array("message" => "No se pudo actualizar el estudiante."));
+        }
+    } else {
+        http_response_code(404);
+        echo json_encode(array("message" => "Estudiante no encontrado."));
+    }
+} else {
+    http_response_code(400);
+    echo json_encode(array("message" => "Datos insuficientes para actualizar."));
+}
+?>
+```
+
+Módulo 7: Controlador - DELETE (10 minutos)
+
+ delete.php
+```php
+<?php
+header('Content-Type: application/json; charset=utf-8');
+
+include_once '../database/connection.php';
+include_once '../models/Student.php';
+
+$database = new Database();
+$db = $database->getConnection();
+
+$student = new Student($db);
+
+// Obtener datos del DELETE
+$data = json_decode(file_get_contents("php://input"));
+
+// Validar que tenemos ID
+if(!empty($data->id)) {
+    $student->id = $data->id;
+    
+    // Verificar que existe antes de eliminar
+    if($student->readOne()) {
+        if($student->delete()) {
+            http_response_code(200);
+            echo json_encode(array("message" => "Estudiante eliminado exitosamente."));
+        } else {
+            http_response_code(503);
+            echo json_encode(array("message" => "No se pudo eliminar el estudiante."));
+        }
+    } else {
+        http_response_code(404);
+        echo json_encode(array("message" => "Estudiante no encontrado."));
+    }
+} else {
+    http_response_code(400);
+    echo json_encode(array("message" => "ID de estudiante requerido."));
+}
+?>
+```
+
+Módulo 8: Pruebas Integrales (12 minutos)
+
+ Archivo de pruebas: test_crud.http
+```http
+ CREATE - Crear nuevo estudiante
+POST http://localhost/crud_estudiantes/create.php
+Content-Type: application/json
+
+{
+    "nombre": "Carlos Rodríguez",
+    "email": "carlos@escuela.com",
+    "carrera": "Ingeniería Civil"
+}
+
+ READ - Listar todos los estudiantes
+GET http://localhost/crud_estudiantes/index.php
+
+ READ - Obtener estudiante específico
+GET http://localhost/crud_estudiantes/read_one.php?id=1
+
+ UPDATE - Actualizar estudiante
+PUT http://localhost/crud_estudiantes/update.php
+Content-Type: application/json
+
+{
+    "id": 1,
+    "nombre": "Carlos Eduardo Rodríguez",
+    "carrera": "Ingeniería Electrónica"
+}
+
+ DELETE - Eliminar estudiante
+DELETE http://localhost/crud_estudiantes/delete.php
+Content-Type: application/json
+
+{
+    "id": 1
+}
+```
+
+ Ejecutar pruebas con VS Code REST Client:
+1. Instalar extensión "REST Client"
+2. Crear archivo test_crud.http
+3. Hacer clic en "Send Request" sobre cada petición
+
+
+Checklist de Aprendizaje
+
+Al finalizar esta guía debes poder:
+- [ ] Explicar qué significa CRUD y su importancia
+- [ ] Configurar conexión a MySQL con PDO
+- [ ] Implementar un modelo con operaciones CRUD
+- [ ] Crear controladores para cada operación
+- [ ] Manejar códigos HTTP apropiados
+- [ ] Validar datos de entrada
+- [ ] Prevenir inyección SQL con prepared statements
+- [ ] Probar APIs con herramientas como cURL o REST Client
+
+Ejercicios de Ampliación (Opcional)
+
+1. Agregar validación de email: Verificar formato correcto de email
+2. Implementar búsqueda: Endpoint GET /students?search=nombre
+3. Agregar paginación: GET /students?page=1&limit=10
+4. Crear interfaz web: HTML + CSS + JavaScript para consumir la API
+5. Agregar autenticación: Sistema de login para proteger endpoints
+
+Consejos Finales
+
+- Siempre valida los datos del usuario
+- Usa prepared statements para seguridad
+- Maneja errores adecuadamente con try-catch
+- Documenta tu código con comentarios claros
+- Prueba cada endpoint antes de continuar
+

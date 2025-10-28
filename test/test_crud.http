@@ -1,0 +1,374 @@
+### CREATE - Crear nuevo estudiante
+POST http://localhost/crud_estudiantes/php/create.php
+Content-Type: application/json
+
+{
+    "nombre": "Carlos Rodríguez",
+    "email": "carlos@escuela.com",
+    "carrera": "Ingeniería Civil"
+}
+
+###
+
+### READ - Listar todos los estudiantes
+GET http://localhost/crud_estudiantes/php/index.php
+
+###
+
+### READ - Obtener estudiante específico (cambiar el ID según corresponda)
+GET http://localhost/crud_estudiantes/php/read_one.php?id=1
+
+###
+
+### UPDATE - Actualizar estudiante (cambiar el ID según corresponda)
+PUT http://localhost/crud_estudiantes/php/update.php
+Content-Type: application/json
+
+{
+    "id": 12,
+    "nombre": "Carlos Eduardo Rodríguez",
+    "carrera": "Ingeniería electrónica"
+}
+
+###
+
+### DELETE - Eliminar estudiante (cambiar el ID según corresponda)
+DELETE http://localhost/crud_estudiantes/php/delete.php
+Content-Type: application/json
+
+{
+    "id": 1
+}
+
+
+
+
+### ====================================
+### TESTS PARA QUIZ 2 - DESARROLLO WEB
+### Sistema de Gestión Académica Avanzado
+### ====================================
+
+### Variables
+@baseUrl = http://localhost/crud_estudiantes
+@token = YOUR_TOKEN_HERE
+
+### ====================================
+### 1. AUTENTICACIÓN
+### ====================================
+
+### LOGIN - Administrador
+POST {{baseUrl}}/php/login.php
+Content-Type: application/json
+
+{
+    "username": "admin",
+    "password": "password"
+}
+
+###
+
+### LOGIN - Estudiante
+POST {{baseUrl}}/php/login.php
+Content-Type: application/json
+
+{
+    "username": "estudiante",
+    "password": "student123"
+}
+
+###
+
+### LOGIN - Credenciales incorrectas (debe fallar)
+POST {{baseUrl}}/php/login.php
+Content-Type: application/json
+
+{
+    "username": "admin",
+    "password": "wrongpassword"
+}
+
+###
+
+### LOGOUT
+POST {{baseUrl}}/php/logout.php
+Content-Type: application/json
+Authorization: Bearer {{token}}
+
+###
+
+### ====================================
+### 2. CRUD BÁSICO (Requiere Autenticación)
+### ====================================
+
+### CREATE - Crear nuevo estudiante
+POST {{baseUrl}}/php/create.php
+Content-Type: application/json
+Authorization: Bearer {{token}}
+
+{
+    "nombre": "Ana María García",
+    "email": "ana.garcia@universidad.com",
+    "carrera": "Ingeniería de Sistemas",
+    "grade": 4.5,
+    "status": "active"
+}
+
+###
+
+### READ ALL - Listar todos los estudiantes (sin filtros)
+GET {{baseUrl}}/php/students.php
+Authorization: Bearer {{token}}
+
+###
+
+### READ ALL - Con paginación
+GET {{baseUrl}}/php/students.php?page=1&limit=5
+Authorization: Bearer {{token}}
+
+###
+
+### READ ONE - Obtener estudiante específico (cambiar ID)
+GET {{baseUrl}}/php/read_one.php?id=8
+Authorization: Bearer {{token}}
+
+###
+
+### UPDATE - Actualizar estudiante (cambiar ID)
+PUT {{baseUrl}}/php/update.php
+Content-Type: application/json
+Authorization: Bearer {{token}}
+
+{
+    "id": 18,
+    "nombre": "Ana María García Rodríguez",
+    "email": "ana.garcia@universidad.com",
+    "carrera": "Ingeniería de Sistemas",
+    "grade": 4.8,
+    "status": "active"
+}
+
+###
+
+### DELETE - Eliminar estudiante (cambiar ID)
+DELETE {{baseUrl}}/php/delete.php
+Content-Type: application/json
+Authorization: Bearer {{token}}
+
+{
+    "id": 99
+}
+
+###
+
+### ====================================
+### 3. FILTROS AVANZADOS
+### ====================================
+
+### Búsqueda por nombre o email
+GET {{baseUrl}}/php/students.php?search=ana
+Authorization: Bearer {{token}}
+
+###
+
+### Filtrar por status
+GET {{baseUrl}}/php/students.php?status=active
+Authorization: Bearer {{token}}
+
+###
+
+### Filtrar por carrera
+GET {{baseUrl}}/php/students.php?carrera=Ingeniería de Sistemas
+Authorization: Bearer {{token}}
+
+###
+
+### Filtrar por rango de notas
+GET {{baseUrl}}/php/students.php?grade_min=4.0&grade_max=5.0
+Authorization: Bearer {{token}}
+
+###
+
+### Filtros combinados + paginación
+GET {{baseUrl}}/php/students.php?status=active&carrera=Ingeniería de Sistemas&grade_min=3.5&page=1&limit=10
+Authorization: Bearer {{token}}
+
+###
+
+### ====================================
+### 4. BATCH OPERATIONS
+### ====================================
+
+### BATCH DELETE - Eliminar múltiples estudiantes
+### (Solo administradores - cambiar IDs según tus datos)
+DELETE {{baseUrl}}/php/batch_delete.php
+Content-Type: application/json
+Authorization: Bearer {{token}}
+
+{
+    "ids": [5, 6, 7]
+}
+
+###
+
+### ====================================
+### 5. ESTADÍSTICAS
+### ====================================
+
+### Obtener estadísticas generales
+GET {{baseUrl}}/php/statistics.php
+Authorization: Bearer {{token}}
+
+###
+
+### ====================================
+### 6. PRUEBAS DE ERRORES Y VALIDACIONES
+### ====================================
+
+### CREATE - Datos incompletos (debe fallar)
+POST {{baseUrl}}/php/create.php
+Content-Type: application/json
+Authorization: Bearer {{token}}
+
+{
+    "nombre": "Juan Pérez"
+}
+
+###
+
+### UPDATE - ID inexistente (debe fallar)
+PUT {{baseUrl}}/php/update.php
+Content-Type: application/json
+Authorization: Bearer {{token}}
+
+{
+    "id": 99999,
+    "nombre": "No existe"
+}
+
+###
+
+### Acceso sin token (debe fallar con 401)
+GET {{baseUrl}}/php/students.php
+
+###
+
+### BATCH DELETE sin rol admin (debe fallar con 403)
+DELETE {{baseUrl}}/php/batch_delete.php
+Content-Type: application/json
+Authorization: Bearer STUDENT_TOKEN_HERE
+
+{
+    "ids": [1, 2]
+}
+
+###
+
+### ====================================
+### 7. CASOS DE USO COMPLEJOS
+### ====================================
+
+### Crear estudiante con nota alta
+POST {{baseUrl}}/php/create.php
+Content-Type: application/json
+Authorization: Bearer {{token}}
+
+{
+    "nombre": "Carlos Excelente Estudiante",
+    "email": "carlos.excelente@universidad.com",
+    "carrera": "Ingeniería Civil",
+    "grade": 4.9,
+    "status": "active"
+}
+
+###
+
+### Crear estudiante con nota baja
+POST {{baseUrl}}/php/create.php
+Content-Type: application/json
+Authorization: Bearer {{token}}
+
+{
+    "nombre": "Pedro Necesita Mejorar",
+    "email": "pedro.mejorar@universidad.com",
+    "carrera": "Medicina",
+    "grade": 2.5,
+    "status": "inactive"
+}
+
+###
+
+### Crear estudiante graduado
+POST {{baseUrl}}/php/create.php
+Content-Type: application/json
+Authorization: Bearer {{token}}
+
+{
+    "nombre": "Laura Graduada Exitosa",
+    "email": "laura.graduada@universidad.com",
+    "carrera": "Derecho",
+    "grade": 4.7,
+    "status": "graduated"
+}
+
+###
+
+### Buscar estudiantes con nota menor a 3.0 (en riesgo)
+GET {{baseUrl}}/php/students.php?grade_max=2.9&status=inactive
+Authorization: Bearer {{token}}
+
+###
+
+### Buscar estudiantes destacados (nota >= 4.5)
+GET {{baseUrl}}/php/students.php?grade_min=4.5&status=active
+Authorization: Bearer {{token}}
+
+###
+
+### ====================================
+### 8. PRUEBAS DE TRANSACCIONES
+### ====================================
+
+### Actualizar múltiples campos a la vez (transacción)
+PUT {{baseUrl}}/php/update.php
+Content-Type: application/json
+Authorization: Bearer {{token}}
+
+{
+    "id": 18,
+    "nombre": "Ana María García Actualizada",
+    "email": "ana.nueva@universidad.com",
+    "carrera": "Ingeniería Electrónica",
+    "grade": 4.95,
+    "status": "graduated"
+}
+
+###
+
+### ====================================
+### NOTAS PARA PRUEBAS
+### ====================================
+
+# 1. Reemplaza {{token}} con el token real obtenido del login
+# 2. Ajusta los IDs según los datos en tu base de datos
+# 3. Ejecuta las pruebas en orden para resultados consistentes
+# 4. Verifica los códigos de respuesta HTTP:
+#    - 200: Éxito
+#    - 201: Creado
+#    - 400: Solicitud incorrecta
+#    - 401: No autorizado
+#    - 403: Prohibido
+#    - 404: No encontrado
+#    - 500: Error del servidor
+
+### ====================================
+### FLUJO DE PRUEBA COMPLETO
+### ====================================
+
+# 1. Login como admin → Copiar token
+# 2. Crear 5 estudiantes con diferentes datos
+# 3. Listar estudiantes con paginación
+# 4. Aplicar filtros diversos
+# 5. Actualizar un estudiante
+# 6. Batch delete de 2 estudiantes
+# 7. Obtener estadísticas
+# 8. Logout
